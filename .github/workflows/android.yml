@@ -24,9 +24,15 @@ jobs:
     - name: Verify Java Version
       run: java -version
 
-    - name: Create dummy keystore.properties
+    - name: Generate Debug Keystore
       run: |
-        echo "storeFile=debug.keystore" > keystore.properties
+        mkdir -p $HOME/.android
+        keytool -genkeypair -v -keystore $HOME/.android/debug.keystore -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=debug, OU=debug, O=debug, L=debug, S=debug, C=US"
+        chmod 755 $HOME/.android/debug.keystore
+
+    - name: Create keystore.properties
+      run: |
+        echo "storeFile=$HOME/.android/debug.keystore" > keystore.properties
         echo "storePassword=android" >> keystore.properties
         echo "keyAlias=androiddebugkey" >> keystore.properties
         echo "keyPassword=android" >> keystore.properties
