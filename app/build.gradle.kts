@@ -22,23 +22,31 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    signingConfigs {
-        val keystoreProperties = rootProject.file("keystore.properties")
-        val properties = Properties()
-        properties.load(FileInputStream(keystoreProperties))
+    // Safe loading of keystore properties
+    val keystorePropertiesFile = rootProject.file("keystore.properties")
+    val properties = Properties()
 
+    if (keystorePropertiesFile.exists()) {
+        properties.load(FileInputStream(keystorePropertiesFile))
+    } else {
+        println("⚠️ Warning: keystore.properties not found. Using default debug signing config.")
+    }
+
+    signingConfigs {
+        // Debug signing config
         getByName("debug") {
-            storeFile = file(properties.getProperty("debugStoreFile"))
-            storePassword = properties.getProperty("debugPassword")
-            keyAlias = properties.getProperty("debugKeyAlias")
-            keyPassword  = properties.getProperty("debugKeyPassword")
+            storeFile = file(properties.getProperty("debugStoreFile", "debug.keystore"))
+            storePassword = properties.getProperty("debugPassword", "android")
+            keyAlias = properties.getProperty("debugKeyAlias", "androiddebugkey")
+            keyPassword = properties.getProperty("debugKeyPassword", "android")
         }
 
+        // Release signing config
         create("release") {
-            storeFile = file(properties.getProperty("releaseStoreFile"))
-            storePassword = properties.getProperty("releasePassword")
-            keyAlias = properties.getProperty("releaseKeyAlias")
-            keyPassword  = properties.getProperty("releaseKeyPassword")
+            storeFile = file(properties.getProperty("releaseStoreFile", "release.keystore"))
+            storePassword = properties.getProperty("releasePassword", "releasePassword")
+            keyAlias = properties.getProperty("releaseKeyAlias", "releaseKeyAlias")
+            keyPassword = properties.getProperty("releaseKeyPassword", "releaseKeyPassword")
         }
     }
 
@@ -69,6 +77,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
         jvmTarget = "17"
     }
